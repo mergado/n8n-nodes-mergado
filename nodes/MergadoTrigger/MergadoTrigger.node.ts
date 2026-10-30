@@ -23,7 +23,7 @@ export class MergadoTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Mergado Trigger',
 		name: 'mergadoTrigger',
-		icon: { light: 'file:../Mergado/mergado.svg', dark: 'file:../Mergado/mergado.dark.svg' },
+		icon: { light: 'file:../Mergado/mergado.svg', dark: 'file:../Mergado/mergado.svg' },
 		group: ['trigger'],
 		version: 1,
 		subtitle: '={{$parameter["event"]}}',

@@ -15,7 +15,7 @@ export class Mergado implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Mergado',
 		name: 'mergado',
-		icon: { light: 'file:mergado.svg', dark: 'file:mergado.dark.svg' },
+		icon: { light: 'file:mergado.svg', dark: 'file:mergado.svg' },
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',

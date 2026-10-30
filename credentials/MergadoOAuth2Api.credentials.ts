@@ -15,7 +15,7 @@ export class MergadoOAuth2Api implements ICredentialType {
 
 	icon = {
 		light: 'file:../nodes/Mergado/mergado.svg',
-		dark: 'file:../nodes/Mergado/mergado.dark.svg',
+		dark: 'file:../nodes/Mergado/mergado.svg',
 	} as const;
 
 	documentationUrl = 'https://github.com/mergado/n8n-nodes-mergado?tab=readme-ov-file#credentials';
