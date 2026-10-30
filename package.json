@@ -1,0 +1,66 @@
+{
+  "name": "n8n-nodes-mergado",
+  "version": "0.1.0",
+  "description": "n8n node for Mergado: list e-shops and projects, search products, manage queries and rules in your product feeds.",
+  "license": "MIT",
+  "homepage": "https://github.com/mergado/n8n-nodes-mergado",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "mergado",
+    "product feed",
+    "e-commerce"
+  ],
+  "author": {
+    "name": "Mergado technologies s.r.o.",
+    "email": "developers@mergado.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mergado/n8n-nodes-mergado.git"
+  },
+  "scripts": {
+    "build": "n8n-node build",
+    "build:watch": "tsc --watch",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": true,
+    "credentials": [
+      "dist/credentials/MergadoOAuth2Api.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Mergado/Mergado.node.js",
+      "dist/nodes/MergadoTrigger/MergadoTrigger.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "^0.54.6",
+    "eslint": "9.32.0",
+    "prettier": "3.6.2",
+    "release-it": "^21.1.0",
+    "typescript": "5.9.2"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "bugs": {
+    "url": "https://github.com/mergado/n8n-nodes-mergado/issues"
+  },
+  "release-it": {
+    "git": {
+      "tagName": "v${version}"
+    },
+    "github": {
+      "releaseName": "v${version}"
+    }
+  }
+}
