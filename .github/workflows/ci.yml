@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+# Cancel in-progress runs for the same branch/PR to avoid wasting CI minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # Both repositories are checked out side by side, the layout the parity check expects:
+    #   $GITHUB_WORKSPACE/n8n-nodes-mergado   (this repository)
+    #   $GITHUB_WORKSPACE/make-app-mergado    (Make app with mergado-moduly.json and check-parity.mjs)
+    defaults:
+      run:
+        working-directory: n8n-nodes-mergado
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: n8n-nodes-mergado
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+          cache-dependency-path: n8n-nodes-mergado/package-lock.json
+
+      # --ignore-scripts: lint and build need no native modules (the n8n dev dependency
+      # tree contains isolated-vm, which would otherwise be compiled for nothing).
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run build
+        run: npm run build
+
+      - name: Run n8n community package scanner (before publishing)
+        run: |
+          npm install --prefix "$RUNNER_TEMP/scanner" --ignore-scripts --no-audit --no-fund @n8n/scan-community-package
+          SCANNER_DIR="$RUNNER_TEMP/scanner" node scripts/scan-package.mjs
+
+      # The specification (mergado-moduly.json) and check-parity.mjs live in the public
+      # repository mergado/make-app-mergado. Until its main branch has the script, the
+      # step only warns.
+      - name: Check out Make app (specification)
+        working-directory: ${{ github.workspace }}
+        run: git clone --depth 1 https://github.com/mergado/make-app-mergado.git make-app-mergado || echo "Make app repository could not be cloned."
+
+      - name: Check parity with the Make app
+        working-directory: ${{ github.workspace }}
+        run: |
+          script=$(find make-app-mergado -name check-parity.mjs -not -path '*/node_modules/*' 2>/dev/null | head -n 1)
+          if [ -z "$script" ]; then
+            echo "::warning title=Parity check skipped::check-parity.mjs is not on main of mergado/make-app-mergado yet."
+            exit 0
+          fi
+          node "$script"
