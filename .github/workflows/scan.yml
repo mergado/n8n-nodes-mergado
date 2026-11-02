@@ -1,0 +1,54 @@
+# Runs n8n's community package scanner on a version published to npm, including the
+# provenance check. This is the check n8n runs before verifying a community node.
+#
+# Runs after every publish (called from publish.yml), on demand (Actions → Run workflow)
+# and on pull requests that change this file (scans the latest published version).
+
+name: Scan published package
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to scan (empty = latest)'
+        required: false
+        default: ''
+  pull_request:
+    paths:
+      - .github/workflows/scan.yml
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      # --ignore-scripts: the scanner needs no native modules (its dependency tree
+      # contains isolated-vm, which would otherwise be compiled).
+      - name: Install the scanner
+        run: npm install --prefix "$RUNNER_TEMP/scanner" --ignore-scripts --no-audit --no-fund @n8n/scan-community-package
+
+      # A new version can take a moment to show up in the registry, so it retries.
+      # The CLI exits with 0 even when a check fails, so the result is read from its output.
+      - name: Scan
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          cli="$RUNNER_TEMP/scanner/node_modules/@n8n/scan-community-package/scanner/cli.mjs"
+          target="n8n-nodes-mergado${VERSION:+@$VERSION}"
+          for attempt in 1 2 3 4 5; do
+            node "$cli" "$target" 2>&1 | tee scan.log
+            grep -q "has passed all security checks" scan.log && exit 0
+            echo "Attempt $attempt failed, retrying in 30 s."
+            sleep 30
+          done
+          exit 1

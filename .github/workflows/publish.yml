@@ -64,6 +64,9 @@ jobs:
     name: Publish to npm
     runs-on: ubuntu-latest
 
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
     permissions:
       # Required to mint an OIDC token for npm provenance attestation.
       id-token: write
@@ -83,6 +86,10 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
+      - name: Read version
+        id: version
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
       - name: Release
         # Publishes to npm with a provenance attestation (requires id-token: write above).
         # Lint and build run automatically as part of the release process.
@@ -97,17 +104,11 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # The official scanner checks the package as published on npm, including its
-      # provenance. This is the check n8n runs before verification.
-      - name: Scan the published package
-        # A new version can take a moment to show up in the registry, so it retries.
-        # The CLI exits with 0 even when a check fails, so the result is read from its output.
-        run: |
-          version=$(node -p "require('./package.json').version")
-          for attempt in 1 2 3 4 5; do
-            npx -y @n8n/scan-community-package "n8n-nodes-mergado@$version" | tee scan.log
-            grep -q "has passed all security checks" scan.log && exit 0
-            echo "Attempt $attempt failed, retrying in 30 s."
-            sleep 30
-          done
-          exit 1
+  # The official scanner checks the package as published on npm, including its
+  # provenance. This is the check n8n runs before verification.
+  scan:
+    name: Scan the published package
+    needs: publish
+    uses: ./.github/workflows/scan.yml
+    with:
+      version: ${{ needs.publish.outputs.version }}
