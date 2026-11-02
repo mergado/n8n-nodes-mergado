@@ -104,5 +104,5 @@ npm run dev
 
 - `npm run dev` starts the latest n8n with this node, which needs Node.js 24.
 - The functions of this node and of the Mergado app for Make are kept in line with one specification, `mergado-moduly.json` in [mergado/make-app-mergado](https://github.com/mergado/make-app-mergado). CI runs its `check-parity.mjs` against this repository.
-- CI also runs the checks of n8n's community package scanner before publishing (`scripts/scan-package.mjs`).
+- CI also runs the checks of n8n's community package scanner before publishing (`scripts/scan-package.mjs`). After publishing, `.github/workflows/scan.yml` runs the official scanner on the published version, including provenance; it can also be started by hand from the Actions tab.
 - Releases: `npm run release` bumps the version, updates the changelog and pushes a `vX.Y.Z` tag. The tag starts `.github/workflows/publish.yml`, which publishes to npm with provenance.
