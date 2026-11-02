@@ -65,6 +65,8 @@ The node signs in to Mergado with OAuth 2. You need a Mergado account; you don't
 
 n8n registers its own OAuth client with Mergado for your n8n instance (Dynamic Client Registration, public client with PKCE). The access token is refreshed automatically.
 
+n8n registers a new client every time you click **Connect my account**, and Mergado accepts one registration per minute from the same n8n instance. If connecting fails with "Request failed with status code 429" (or another 4xx/5xx code), wait a minute and click the button once.
+
 ## Compatibility
 
 Requires n8n 1.119.0 or later (generic OAuth2 credentials with Dynamic Client Registration).
